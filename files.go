@@ -20,7 +20,7 @@ func getGoFiles(path string) ([]string, error) {
 			goFiles = append(goFiles, subDirGoFiles...)
 		}
 
-		if !strings.HasSuffix(file.Name(), ".go") {
+		if !strings.HasSuffix(filePath, ".go") {
 			continue
 		}
 		goFiles = append(goFiles, filePath)
