@@ -30,6 +30,7 @@ func main() {
 		fmt.Println("The list of types in the package", *pkgName)
 		listTypesInPkg(*path, *pkgName)
 	case *typeName != "" && *lsMethods && *pkgName == "":
+		fmt.Println("The list of methods of type ", *typeName)
 		listMethodsOfType(*path, *typeName)
 	case *help:
 		printHelp()
@@ -39,7 +40,7 @@ func main() {
 func listAllFiles(path string) {
 	files, err := getGoFiles(path)
 	if err != nil {
-		fmt.Printf("Failed to get the list of files: %v", err)
+		fmt.Printf("Failed to get the list of files: %v\n", err)
 		os.Exit(1)
 	}
 	printSlice(files)
@@ -62,12 +63,12 @@ func listAllPkgs(path string) {
 func listAllTypes(path string) {
 	files, err := getGoFiles(path)
 	if err != nil {
-		fmt.Printf("Failed to get the list of files: %v", err)
+		fmt.Printf("Failed to get the list of files: %v\n", err)
 		os.Exit(1)
 	}
 	types, err := getTypes(files)
 	if err != nil {
-		fmt.Printf("Failed to get the list of types: %v", err)
+		fmt.Printf("Failed to get the list of types: %v\n", err)
 		os.Exit(1)
 	}
 	printSlice(types)
@@ -76,12 +77,12 @@ func listAllTypes(path string) {
 func listTypesInPkg(path, pkgName string) {
 	files, err := getGoFiles(path)
 	if err != nil {
-		fmt.Printf("Failed to get the list of files: %v", err)
+		fmt.Printf("Failed to get the list of files: %v\n", err)
 		os.Exit(1)
 	}
 	types, err := GetTypesOfPkg(files, pkgName)
 	if err != nil {
-		fmt.Printf("Failed to get the list of types: %v", err)
+		fmt.Printf("Failed to get the list of types: %v\n", err)
 		os.Exit(1)
 	}
 	printSlice(types)
@@ -90,12 +91,12 @@ func listTypesInPkg(path, pkgName string) {
 func listMethodsOfType(path, typeName string) {
 	files, err := getGoFiles(path)
 	if err != nil {
-		fmt.Printf("Failed to get the list of files: %v", err)
+		fmt.Printf("Failed to get the list of files: %v\n", err)
 		os.Exit(1)
 	}
 	methods, err := GetTypeMethods(files, typeName)
 	if err != nil {
-		fmt.Printf("Failed to get the list of methods of type %s: %v", typeName, err)
+		fmt.Printf("Failed to get the list of methods of type %s: %v\n", typeName, err)
 		os.Exit(1)
 	}
 	printSlice(methods)
