@@ -20,8 +20,6 @@ func GetTypeMethods(files []string, typeName string) ([]string, error) {
 }
 
 func readTypeMethodsInFile(fileName, typeName string) ([]string, error) {
-	//Check pkg name in a file
-
 	methods := []string{}
 	file, err := os.Open(fileName)
 	if err != nil {
@@ -36,8 +34,6 @@ func readTypeMethodsInFile(fileName, typeName string) ([]string, error) {
 		line = strings.TrimSpace(line)
 		matched, _ := regexp.MatchString(re, line)
 		if matched {
-			//words := strings.Split(line, " ")
-
 			methods = append(methods, strings.ReplaceAll(line, "{", ""))
 		}
 	}
