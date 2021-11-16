@@ -8,30 +8,30 @@ import (
 
 func main() {
 	var path = flag.String("path", ".", "Path where to look at")
-	var lsPkg = flag.Bool("lsPkg", false, "List all packages")
-	var lsTypes = flag.Bool("lsTypes", false, "List all types")
-	var pkgName = flag.String("pkgName", "", "Apply action to a specific package")
-	var typeName = flag.String("typeName", "", "Apply action to a specific type")
-	var lsMethods = flag.Bool("lsMethods", false, "List all methods of specified type")
+	var lsP = flag.Bool("lsP", false, "List all packages")
+	var lsT = flag.Bool("lsT", false, "List all types")
+	var pkg = flag.String("pkg", "", "Apply action to a specific package")
+	var tName = flag.String("tName", "", "Apply action to a specific type")
+	var lsM = flag.Bool("lsM", false, "List all methods of specified type")
 	var help = flag.Bool("help", false, "Print help")
 	flag.Parse()
 
 	switch {
-	case !*lsPkg && !*lsTypes && !*help && *typeName == "":
+	case !*lsP && !*lsT && !*help && *tName == "":
 		fmt.Println("The list of all Go files in the folder ", *path)
 		listAllFiles(*path)
-	case *lsPkg && !*lsTypes:
+	case *lsP && !*lsT:
 		fmt.Println("The list of all packages")
 		listAllPkgs(*path)
-	case !*lsPkg && *lsTypes && *pkgName == "":
+	case !*lsP && *lsT && *pkg == "":
 		fmt.Println("The list of all types in files")
 		listAllTypes(*path)
-	case *pkgName != "" && *lsTypes:
-		fmt.Println("The list of types in the package", *pkgName)
-		listTypesInPkg(*path, *pkgName)
-	case *typeName != "" && *lsMethods && *pkgName == "":
-		fmt.Println("The list of methods of type ", *typeName)
-		listMethodsOfType(*path, *typeName)
+	case *pkg != "" && *lsT:
+		fmt.Println("The list of types in the package", *pkg)
+		listTypesInPkg(*path, *pkg)
+	case *tName != "" && *lsM && *pkg == "":
+		fmt.Println("The list of methods of type ", *tName)
+		listMethodsOfType(*path, *tName)
 	case *help:
 		printHelp()
 	}

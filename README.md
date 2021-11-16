@@ -19,19 +19,19 @@ go build
 ```
 2. List of all packages in the files of the current directory and sub directories
 ```
-./gosrcinfo -lsPkg
+./gosrcinfo -lsP
 ```
 3. List of all types in files of the specified directory and its sub directories
 ```
-./gosrcinfo -path=/path/to/files -lsTypes
+./gosrcinfo -path=/path/to/files -lsT
 ```
 4. List of types in the package
 ```
-./gosrcinfo -lsTypes -pkgName=package_name
+./gosrcinfo -lsT -pkg=package_name
 ```
 5. List of methods of specified type
 ```
-./gosrcinfo -typeName=TestType -lsMethods
+./gosrcinfo -tName=TestType -lsM
 ```
 
 # Licensing
