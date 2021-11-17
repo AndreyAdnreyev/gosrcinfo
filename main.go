@@ -25,16 +25,16 @@ func main() {
 		listAllPkgs(*path)
 	case !*lsP && *lsT && !*lsM && !*help && *pkg == "" && *t == "":
 		fmt.Printf("The list of all types in all files\n\n")
-		listAllTypes(*path)
+		listTypes(*path, *pkg)
 	case !*lsP && *lsT && !*lsM && !*help && *pkg != "" && *t == "":
 		fmt.Printf("The list of all types in the package %s\n\n", *pkg)
-		listTypesInPkg(*path, *pkg)
+		listTypes(*path, *pkg)
 	case !*lsP && !*lsT && *lsM && !*help && *pkg == "" && *t != "":
 		fmt.Printf("The list of all methods of type %s\n\n", *t)
-		listMethodsOfType(*path, *t)
+		listMethodsOfType(*path, *t, *pkg)
 	case !*lsP && !*lsT && *lsM && !*help && *pkg != "" && *t != "":
 		fmt.Printf("The list of all methods of type %s in package %s\n\n", *t, *pkg)
-		listMethodsOfTypeInPkg(*path, *t, *pkg)
+		listMethodsOfType(*path, *t, *pkg)
 	case *help:
 		printHelp()
 	default:
@@ -66,13 +66,13 @@ func listAllPkgs(path string) {
 
 }
 
-func listAllTypes(path string) {
+func listTypes(path, pkg string) {
 	files, err := getGoFiles(path)
 	if err != nil {
 		fmt.Printf("Failed to get the list of files: %v\n", err)
 		os.Exit(1)
 	}
-	typesData, err := types(files)
+	typesData, err := types(files, pkg)
 	if err != nil {
 		fmt.Printf("Failed to get the list of types: %v\n", err)
 		os.Exit(1)
@@ -80,41 +80,13 @@ func listAllTypes(path string) {
 	typesData.print()
 }
 
-func listTypesInPkg(path, pkg string) {
+func listMethodsOfType(path, t, pkg string) {
 	files, err := getGoFiles(path)
 	if err != nil {
 		fmt.Printf("Failed to get the list of files: %v\n", err)
 		os.Exit(1)
 	}
-	typesData, err := typesOfPkg(files, pkg)
-	if err != nil {
-		fmt.Printf("Failed to get the list of types: %v\n", err)
-		os.Exit(1)
-	}
-	typesData.print()
-}
-
-func listMethodsOfType(path, t string) {
-	files, err := getGoFiles(path)
-	if err != nil {
-		fmt.Printf("Failed to get the list of files: %v\n", err)
-		os.Exit(1)
-	}
-	methods, err := methodsOfType(files, t)
-	if err != nil {
-		fmt.Printf("Failed to get the list of methods of type %s: %v\n", t, err)
-		os.Exit(1)
-	}
-	printSlice(methods)
-}
-
-func listMethodsOfTypeInPkg(path, t, pkg string) {
-	files, err := getGoFiles(path)
-	if err != nil {
-		fmt.Printf("Failed to get the list of files: %v\n", err)
-		os.Exit(1)
-	}
-	methods, err := methodsOfTypeInPkg(files, t, pkg)
+	methods, err := methodsOfType(files, t, pkg)
 	if err != nil {
 		fmt.Printf("Failed to get the list of methods of type %s: %v\n", t, err)
 		os.Exit(1)
