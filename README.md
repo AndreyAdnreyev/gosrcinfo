@@ -1,7 +1,7 @@
-**gosrcinfo** allows to collect information about sources of Go projects.
-It displays Go files, packages, types and methods. **gosrcinfo** uses only standard library.
+**gosrcinfo** allows to collect information about the source code of Go projects.
+It prints to stdout the lists of Go files, packages, types and methods. **gosrcinfo** uses only standard library.
 
-# Usage 
+# Build
 
 ```
 git clone git@github.com:AndreyAdnreyev/gosrcinfo.git
@@ -11,7 +11,7 @@ go build
 ./gosrcinfo -help
 ```
 
-# Command Examples
+# Usage
 
 1. List all Go files in the current directory and sub directories
 ```
