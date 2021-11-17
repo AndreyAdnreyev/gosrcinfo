@@ -7,19 +7,23 @@ import (
 	"strings"
 )
 
-func getTypes(files []string) ([]string, error) {
-	types := []string{}
+// types collects all types in all files
+func types(files []string) (MapData, error) {
+	typesData := NewMapData()
 	for _, f := range files {
-		ftypes, err := readTypesInFile(f)
+		types, err := readTypes(f)
 		if err != nil {
 			return nil, err
 		}
-		types = append(types, ftypes...)
+		for _, t := range types {
+			typesData.add(t, f)
+		}
 	}
-	return types, nil
+	return typesData, nil
 }
 
-func readTypesInFile(fileName string) ([]string, error) {
+// readTypes scans all types in a file
+func readTypes(fileName string) ([]string, error) {
 	types := []string{}
 	file, err := os.Open(fileName)
 	if err != nil {
@@ -39,21 +43,24 @@ func readTypesInFile(fileName string) ([]string, error) {
 	return types, nil
 }
 
-func GetTypesOfPkg(files []string, pkg string) ([]string, error) {
-	types := []string{}
+// typesOfPkg collects all types in all files of a specific package
+func typesOfPkg(files []string, pkg string) (MapData, error) {
+	typesData := NewMapData()
 	for _, f := range files {
-		ftypes, err := readPkgsTypesInFile(f, pkg)
+		types, err := readTypesOfPkg(f, pkg)
 		if err != nil {
 			return nil, err
 		}
-		types = append(types, ftypes...)
+		for _, t := range types {
+			typesData.add(t, f)
+		}
 	}
-	return types, nil
+	return typesData, nil
 }
 
-func readPkgsTypesInFile(fileName, pkg string) ([]string, error) {
-	//Check pkg name in a file
-	packageName, err := readPkgName(fileName)
+// readTypesOfPkg scans all types in a file of a specific package
+func readTypesOfPkg(fileName, pkg string) ([]string, error) {
+	packageName, err := readPkg(fileName)
 	if err != nil || packageName != pkg {
 		return []string{}, err
 	}

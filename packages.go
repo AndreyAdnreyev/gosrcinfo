@@ -6,40 +6,40 @@ import (
 	"strings"
 )
 
-//getPkgs returns a slice of packages
-func getPkgs(files []string) ([]string, error) {
-	pkgs := make(map[string]struct{})
+// getPkgs returns a slice of packages
+func getPkgs(files []string) (MapData, error) {
+	pkgsData := NewMapData()
 	for _, f := range files {
-		packageName, err := readPkgName(f)
+		pkgName, err := readPkg(f)
 		if err != nil {
 			return nil, err
 		}
-		if _, ok := pkgs[packageName]; !ok {
-			pkgs[packageName] = struct{}{}
-		}
+		pkgsData.add(pkgName, f)
 
 	}
-	keys := []string{}
-	for k := range pkgs {
-		keys = append(keys, k)
-	}
-	return keys, nil
+	return pkgsData, nil
 
 }
 
-//readPkgName reads the first line of Go files where package name present
-func readPkgName(path string) (string, error) {
+// readPkg reads file until gets the line starting with "package"
+func readPkg(path string) (string, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return "", err
 	}
 	defer file.Close()
 
-	reader := bufio.NewReader(file)
-	line, err := reader.ReadString('\n')
-	if err != nil {
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "package ") {
+			words := strings.Split(line, " ")
+			return words[1], nil
+		}
+	}
+	if err := scanner.Err(); err != nil {
 		return "", err
 	}
-	line = strings.ReplaceAll(line, "package", "")
-	return strings.TrimSpace(line), nil
+	return "", nil
 }

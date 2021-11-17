@@ -11,28 +11,33 @@ func main() {
 	var lsP = flag.Bool("lsP", false, "List all packages")
 	var lsT = flag.Bool("lsT", false, "List all types")
 	var pkg = flag.String("pkg", "", "Apply action to a specific package")
-	var tName = flag.String("tName", "", "Apply action to a specific type")
+	var t = flag.String("type", "", "Apply action to a specific type")
 	var lsM = flag.Bool("lsM", false, "List all methods of specified type")
 	var help = flag.Bool("help", false, "Print help")
 	flag.Parse()
 
 	switch {
-	case !*lsP && !*lsT && !*help && *tName == "":
-		fmt.Println("The list of all Go files in the folder ", *path)
+	case !*lsP && !*lsT && !*lsM && !*help && *pkg == "" && *t == "":
+		fmt.Printf("The list of all Go files in the folder %s\n\n", *path)
 		listAllFiles(*path)
-	case *lsP && !*lsT:
-		fmt.Println("The list of all packages")
+	case *lsP && !*lsT && !*lsM && !*help && *pkg == "" && *t == "":
+		fmt.Printf("The list of all packages in all files\n\n")
 		listAllPkgs(*path)
-	case !*lsP && *lsT && *pkg == "":
-		fmt.Println("The list of all types in files")
+	case !*lsP && *lsT && !*lsM && !*help && *pkg == "" && *t == "":
+		fmt.Printf("The list of all types in all files\n\n")
 		listAllTypes(*path)
-	case *pkg != "" && *lsT:
-		fmt.Println("The list of types in the package", *pkg)
+	case !*lsP && *lsT && !*lsM && !*help && *pkg != "" && *t == "":
+		fmt.Printf("The list of all types in the package %s\n\n", *pkg)
 		listTypesInPkg(*path, *pkg)
-	case *tName != "" && *lsM && *pkg == "":
-		fmt.Println("The list of methods of type ", *tName)
-		listMethodsOfType(*path, *tName)
+	case !*lsP && !*lsT && *lsM && !*help && *pkg == "" && *t != "":
+		fmt.Printf("The list of all methods of type %s\n\n", *t)
+		listMethodsOfType(*path, *t)
+	case !*lsP && !*lsT && *lsM && !*help && *pkg != "" && *t != "":
+		fmt.Printf("The list of all methods of type %s in package %s\n\n", *t, *pkg)
+		listMethodsOfTypeInPkg(*path, *t, *pkg)
 	case *help:
+		printHelp()
+	default:
 		printHelp()
 	}
 }
@@ -52,12 +57,13 @@ func listAllPkgs(path string) {
 		fmt.Printf("Failed to get the list of files: %v", err)
 		os.Exit(1)
 	}
-	packages, err := getPkgs(files)
+	pkgsData, err := getPkgs(files)
 	if err != nil {
 		fmt.Printf("Failed to get the list of packages: %v", err)
 		os.Exit(1)
 	}
-	printSlice(packages)
+	pkgsData.print()
+
 }
 
 func listAllTypes(path string) {
@@ -66,50 +72,52 @@ func listAllTypes(path string) {
 		fmt.Printf("Failed to get the list of files: %v\n", err)
 		os.Exit(1)
 	}
-	types, err := getTypes(files)
+	typesData, err := types(files)
 	if err != nil {
 		fmt.Printf("Failed to get the list of types: %v\n", err)
 		os.Exit(1)
 	}
-	printSlice(types)
+	typesData.print()
 }
 
-func listTypesInPkg(path, pkgName string) {
+func listTypesInPkg(path, pkg string) {
 	files, err := getGoFiles(path)
 	if err != nil {
 		fmt.Printf("Failed to get the list of files: %v\n", err)
 		os.Exit(1)
 	}
-	types, err := GetTypesOfPkg(files, pkgName)
+	typesData, err := typesOfPkg(files, pkg)
 	if err != nil {
 		fmt.Printf("Failed to get the list of types: %v\n", err)
 		os.Exit(1)
 	}
-	printSlice(types)
+	typesData.print()
 }
 
-func listMethodsOfType(path, typeName string) {
+func listMethodsOfType(path, t string) {
 	files, err := getGoFiles(path)
 	if err != nil {
 		fmt.Printf("Failed to get the list of files: %v\n", err)
 		os.Exit(1)
 	}
-	methods, err := GetTypeMethods(files, typeName)
+	methods, err := methodsOfType(files, t)
 	if err != nil {
-		fmt.Printf("Failed to get the list of methods of type %s: %v\n", typeName, err)
+		fmt.Printf("Failed to get the list of methods of type %s: %v\n", t, err)
 		os.Exit(1)
 	}
 	printSlice(methods)
-
 }
 
-func printHelp() {
-	flag.PrintDefaults()
-
-}
-
-func printSlice(input []string) {
-	for i, v := range input {
-		fmt.Println(i+1, ":", v)
+func listMethodsOfTypeInPkg(path, t, pkg string) {
+	files, err := getGoFiles(path)
+	if err != nil {
+		fmt.Printf("Failed to get the list of files: %v\n", err)
+		os.Exit(1)
 	}
+	methods, err := methodsOfTypeInPkg(files, t, pkg)
+	if err != nil {
+		fmt.Printf("Failed to get the list of methods of type %s: %v\n", t, err)
+		os.Exit(1)
+	}
+	printSlice(methods)
 }

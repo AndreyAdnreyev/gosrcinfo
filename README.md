@@ -31,7 +31,7 @@ go build
 ```
 5. List of methods of specified type
 ```
-./gosrcinfo -tName=TestType -lsM
+./gosrcinfo -type=TestType -lsM
 ```
 
 # Licensing
