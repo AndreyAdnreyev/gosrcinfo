@@ -66,7 +66,7 @@ func listData(path, pkg, search string) {
 	}
 	data, err := getData(files, pkg, search)
 	if err != nil {
-		fmt.Printf("Failed to get the list of packages: %v", err)
+		fmt.Printf("Failed to get data: %v", err)
 		os.Exit(1)
 	}
 	data.print()
