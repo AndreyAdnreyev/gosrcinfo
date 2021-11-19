@@ -17,22 +17,31 @@ go build
 ```
 ./gosrcinfo
 ```
-2. List of all packages in the files of the current directory and sub directories
+2. List all packages in the files of the current directory and sub directories
 ```
 ./gosrcinfo -lsP
 ```
-3. List of all types in files of the specified directory and its sub directories
+3. List all types in files of the specified directory and its sub directories
 ```
 ./gosrcinfo -path=/path/to/files -lsT
 ```
-4. List of types in the package
+4. List all types in the package
 ```
 ./gosrcinfo -lsT -pkg=package_name
 ```
-5. List of methods of specified type
+5. List all methods of a specified type
 ```
 ./gosrcinfo -type=TestType -lsM
 ```
+6. List all functions
+```
+./gosrcinfo -lsF
+```
+7. List all functions in a package
+```
+./gosrcinfo -lsF -pkg=package_name
+```
+
 
 # Licensing
 

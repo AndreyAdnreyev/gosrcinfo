@@ -1,42 +1,49 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"os"
+	"regexp"
+	"strings"
+)
+
+const (
+	methodRe string = `^func\s\(.\s.?`
+	fnRe     string = `^func\s\w`
+	typeRe   string = `^type\s\w`
 )
 
 func main() {
 	var path = flag.String("path", ".", "Path where to look at")
 	var lsP = flag.Bool("lsP", false, "List all packages")
 	var lsT = flag.Bool("lsT", false, "List all types")
+	var lsM = flag.Bool("lsM", false, "List all methods of specified type")
+	var lsF = flag.Bool("lsF", false, "List all functions")
 	var pkg = flag.String("pkg", "", "Apply action to a specific package")
 	var t = flag.String("type", "", "Apply action to a specific type")
-	var lsM = flag.Bool("lsM", false, "List all methods of specified type")
 	var help = flag.Bool("help", false, "Print help")
 	flag.Parse()
 
 	switch {
-	case !*lsP && !*lsT && !*lsM && !*help && *pkg == "" && *t == "":
-		fmt.Printf("The list of all Go files in the folder %s\n\n", *path)
-		listAllFiles(*path)
-	case *lsP && !*lsT && !*lsM && !*help && *pkg == "" && *t == "":
-		fmt.Printf("The list of all packages in all files\n\n")
-		listAllPkgs(*path)
-	case !*lsP && *lsT && !*lsM && !*help && *pkg == "" && *t == "":
-		fmt.Printf("The list of all types in all files\n\n")
-		listTypes(*path, *pkg)
-	case !*lsP && *lsT && !*lsM && !*help && *pkg != "" && *t == "":
-		fmt.Printf("The list of all types in the package %s\n\n", *pkg)
-		listTypes(*path, *pkg)
-	case !*lsP && !*lsT && *lsM && !*help && *pkg == "" && *t != "":
-		fmt.Printf("The list of all methods of type %s\n\n", *t)
-		listMethodsOfType(*path, *t, *pkg)
-	case !*lsP && !*lsT && *lsM && !*help && *pkg != "" && *t != "":
-		fmt.Printf("The list of all methods of type %s in package %s\n\n", *t, *pkg)
-		listMethodsOfType(*path, *t, *pkg)
 	case *help:
 		printHelp()
+	case !*lsP && !*lsT && !*lsM && !*lsF:
+		fmt.Printf("The list of all Go files in the folder %s\n\n", *path)
+		listAllFiles(*path)
+	case *lsP && !*lsT && !*lsM && !*lsF:
+		fmt.Printf("The list of all packages in all files\n\n")
+		listData(*path, "", "pkg")
+	case !*lsP && *lsT && !*lsM && !*lsF:
+		fmt.Printf("The list of all types in all files\n\n")
+		listData(*path, *pkg, typeRe)
+	case !*lsP && !*lsT && *lsM && !*lsF:
+		fmt.Printf("The list of all methods of type %s\n\n", *t)
+		listData(*path, *pkg, methodRe+*t)
+	case !*lsP && !*lsT && !*lsM && *lsF:
+		fmt.Printf("The list of all functions \n\n")
+		listData(*path, *pkg, fnRe+*t)
 	default:
 		printHelp()
 	}
@@ -51,45 +58,71 @@ func listAllFiles(path string) {
 	printSlice(files)
 }
 
-func listAllPkgs(path string) {
+func listData(path, pkg, search string) {
 	files, err := getGoFiles(path)
 	if err != nil {
 		fmt.Printf("Failed to get the list of files: %v", err)
 		os.Exit(1)
 	}
-	pkgsData, err := getPkgs(files)
+	data, err := getData(files, pkg, search)
 	if err != nil {
 		fmt.Printf("Failed to get the list of packages: %v", err)
 		os.Exit(1)
 	}
-	pkgsData.print()
+	data.print()
+}
+
+// getData returns collected data from all Go files
+func getData(files []string, pkg, search string) (MapData, error) {
+	out := NewMapData()
+
+	for _, f := range files {
+		fout, err := readData(f, pkg, search)
+		if err != nil {
+			return nil, err
+		}
+		out.add(fout, f)
+
+	}
+
+	return out, nil
 
 }
 
-func listTypes(path, pkg string) {
-	files, err := getGoFiles(path)
+// readData reads a file and returns slice of matched lines
+func readData(path, pkg, search string) ([]string, error) {
+	out := []string{}
+	file, err := os.Open(path)
 	if err != nil {
-		fmt.Printf("Failed to get the list of files: %v\n", err)
-		os.Exit(1)
+		return []string{""}, err
 	}
-	typesData, err := types(files, pkg)
-	if err != nil {
-		fmt.Printf("Failed to get the list of types: %v\n", err)
-		os.Exit(1)
-	}
-	typesData.print()
-}
+	defer file.Close()
 
-func listMethodsOfType(path, t, pkg string) {
-	files, err := getGoFiles(path)
-	if err != nil {
-		fmt.Printf("Failed to get the list of files: %v\n", err)
-		os.Exit(1)
+	re := regexp.MustCompile(search)
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		line = strings.TrimSpace(line)
+
+		if strings.HasPrefix(line, "package ") && pkg == "" && search == "pkg" {
+			words := strings.Split(line, " ")
+			return []string{words[1]}, nil
+		}
+
+		if pkg != "" &&
+			strings.HasPrefix(line, "package ") &&
+			!strings.HasPrefix(line, "package "+pkg) {
+			return []string{}, nil
+		}
+
+		matched := re.MatchString(line)
+		if matched {
+			out = append(out, strings.ReplaceAll(line, "{", ""))
+		}
+
 	}
-	methods, err := methodsOfType(files, t, pkg)
-	if err != nil {
-		fmt.Printf("Failed to get the list of methods of type %s: %v\n", t, err)
-		os.Exit(1)
+	if err := scanner.Err(); err != nil {
+		return out, err
 	}
-	printSlice(methods)
+	return out, nil
 }

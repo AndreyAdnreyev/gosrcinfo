@@ -21,11 +21,13 @@ func (d MapData) print() {
 	}
 }
 
-func (d MapData) add(key string, file string) {
-	if _, ok := d[key]; !ok {
-		d[key] = make([]string, 0)
+func (d MapData) add(in []string, file string) {
+	for _, key := range in {
+		if _, ok := d[key]; !ok {
+			d[key] = make([]string, 0)
+		}
+		d[key] = append(d[key], file)
 	}
-	d[key] = append(d[key], file)
 }
 
 func printSlice(input []string) {
