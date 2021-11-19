@@ -23,7 +23,10 @@ go build
 ```
 3. List all types in files of the specified directory and its sub directories
 ```
-./gosrcinfo -path=/path/to/files -lsT
+./gosrcinfo -path=. -lsT
+The list of all types in all files
+
+  1 : type MapData map[string][]string : ./data.go
 ```
 4. List all types in the package
 ```
@@ -31,11 +34,26 @@ go build
 ```
 5. List all methods of a specified type
 ```
-./gosrcinfo -type=TestType -lsM
+./gosrcinfo -type=MapData -lsM
+The list of all methods of type MapData
+
+  1 : func (d MapData) print()  : ./data.go
+  2 : func (d MapData) add(in []string, file string)  : ./data.go
 ```
 6. List all functions
 ```
 ./gosrcinfo -lsF
+  1 : func getGoFiles(path string) ([]string, error)  : ./files.go
+  2 : func TestGetGoFiles(t *testing.T)  : ./files_test.go
+  3 : func getData(files []string, pkg, search string) (MapData, error)  : ./main.go
+  4 : func readData(path, pkg, search string) ([]string, error)  : ./main.go
+  5 : func printHelp()  : ./data.go
+  6 : func printSlice(input []string)  : ./data.go
+  7 : func setupTestGetGoFiles(tb testing.TB, path string) (func(tb testing.TB), error)  : ./files_test.go
+  8 : func main()  : ./main.go
+  9 : func listAllFiles(path string)  : ./main.go
+ 10 : func listData(path, pkg, search string)  : ./main.go
+ 11 : func NewMapData() MapData  : ./data.go
 ```
 7. List all functions in a package
 ```
